@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+
+        function ajaxGetNumbers() {
+            const numbers_string = []; /* строка полученная ajax запросом */
+            let int_result = [] /* массив для работы с массивами, содержащими набор из 3 цифр для выражения */
+            const num_if_digits = 3; /* количество переменных в финальном выражении, исп для разбития на массивы из трёх эл-ов */
+
+            $.ajax({
+                url: 'http://localhost:8080', /* php -S localhost:8080 запуск хоста файл index.php*/
+                method: 'get',
+                async: true,
+                dataType: "text",
+                success:function(data){   /* функция которая будет выполнена после успешного запроса.  */
+                    numbers_string.push(data)     /* заполняет массив полученными данными ajax запроса string type */
+                    let numbers_integer = (data).split(',');
+                    numbers_integer.splice(numbers_integer.length-1); /* удаления нуля, который появляется при приобразовании полученной строки из ajax запроса*/
+
+                    for (let s = 0, e = num_if_digits; s < numbers_integer.length; s += num_if_digits, e += num_if_digits) /* заполнение массива с массивами из 3 чисел*/
+                        int_result.push(numbers_integer.slice(s, e).map(string => +string)); /* заполнение подмассивов числовыми элементами */
+
+                    const container = document.getElementById('container');
+                    const fragment = new DocumentFragment()
+                    for (let i = 0; i < int_result.length; i++){
+                        const div = document.createElement('div');
+                        div.innerHTML = `(${int_result[i][0]} + ${int_result[i][1]}) * ${int_result[i][2]} = ${(int_result[i][0]+int_result[i][1])*int_result[i][2]}`;
+                        fragment.append(div);
+                        console.log(`(${int_result[i][0]} + ${int_result[i][1]}) * ${int_result[i][2]} = ${(int_result[i][0]+int_result[i][1])*int_result[i][2]}`)
+                    }
+                    container.append(fragment)
+                },
+                error: function (jqXHR, exception) { /* обработчик кодов ошибок ajax запроса*/
+                    if (jqXHR.status === 0) {
+                        alert('Not connect. Verify Network.');
+                    } else if (jqXHR.status === 404) {
+                        alert('Requested page not found (404).');
+                    } else if (jqXHR.status === 500) {
+                        alert('Internal Server Error (500).');
+                    } else if (exception === 'parsererror') {
+                        alert('Requested JSON parse failed.');
+                    } else if (exception === 'timeout') {
+                        alert('Time out error.');
+                    } else if (exception === 'abort') {
+                        alert('Ajax request aborted.');
+                    } else {
+                        alert('Uncaught Error. ' + jqXHR.responseText);
+                    }
+                },
+            });
+        }
+    </script>
+</head>
+<body>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<p>Тестовое задание Эр-Телеком</p>
+<button type="button" onclick="ajaxGetNumbers()">Посчитать</button>
+<div id="container"></div>
+</body>
+</html>
